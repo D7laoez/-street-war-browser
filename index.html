@@ -35,6 +35,13 @@
 <div id="toast" role="status" aria-live="polite"></div><button id="pause" type="button" aria-label="Pause game">Ⅱ PAUSE</button>
 <div id="mobile"><div class="stick" id="stick"><div class="knob" id="knob"></div></div><div class="actions"><div class="actionrow"><button class="touchbtn" data-hold="nitro">NITRO</button><button class="touchbtn fire" data-hold="fire">FIRE</button></div><div class="actionrow"><button class="touchbtn" data-hold="brake">BRAKE</button><button class="touchbtn" data-hold="drive" aria-label="Accelerate">DRIVE</button></div></div></div>
 <div id="overlay"><div class="panel" id="panel"><div class="kicker">DISTRICT 09 / NIGHT OPERATIONS</div><h1>WELCOME TO<br><span>THE WARZONE.</span></h1><p>A hostile city. Armed patrols. No safe route out. Drive through the streets, evade enemy vehicles and fight back. This is a real-time 3D browser build with a follow camera and touch controls.</p><div class="keys"><span class="key"><b>W / S</b> DRIVE / BRAKE</span><span class="key"><b>A / D</b> STEER</span><span class="key"><b>SPACE</b> FIRE</span><span class="key"><b>SHIFT</b> NITRO</span></div><button class="action" id="start">DEPLOY // ENTER CITY</button><p class="hint">DESKTOP: W/↑ DRIVE · S/↓ REVERSE · A/D STEER · SPACE FIRE · SHIFT NITRO · B BRAKE · ESC PAUSE<br>MOBILE: JOYSTICK + DRIVE / BRAKE / FIRE / NITRO</p></div></div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
