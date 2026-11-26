@@ -51,7 +51,7 @@ import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/
 'use strict';
 const canvas=document.querySelector('#game'),$=id=>document.getElementById(id);
 const renderer=new THREE.WebGLRenderer({canvas,antialias:innerWidth>700,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1.25:1.8));renderer.setSize(innerWidth,innerHeight,false);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1:1.5));renderer.setSize(innerWidth,innerHeight,false);renderer.setClearColor(0x263238,1);
 renderer.shadowMap.enabled=innerWidth>700;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x263238);scene.fog=null;
@@ -107,6 +107,8 @@ function installBuildingAssets(){
 buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
 let seed=0;
 for(let gx=-3;gx<3;gx++)for(let gz=-3;gz<3;gz++){let cx=gx*90+45,cz=gz*90+45;let w=rand(24,43),d=rand(24,42),h=rand(13,39);makeBuilding(cx,cz,w,d,h,seed++);if((gx+gz)%2===0)makeBuilding(cx+24,cz-24,13,13,rand(8,15),seed++);}
+// Close-range street frontage: keep recognizable buildings inside the mobile follow-camera view.
+makeBuilding(-19,-34,13,17,27,seed++);makeBuilding(19,-34,13,17,34,seed++);makeBuilding(-22,-68,16,18,39,seed++);makeBuilding(22,-68,16,18,31,seed++);
 function rand(a,b){return a+Math.random()*(b-a)}
 // lamps, traffic signals, roadside clutter
 const props=new THREE.Group();scene.add(props);
@@ -184,9 +186,9 @@ if(enemyCars.length===0){wave++;score+=250;for(let i=0;i<Math.min(3+wave,9);i++)
 updateHUD();
 }
 function playerFireCooldown(dt){fireT=Math.max(0,fireT-dt);if(keys[' ']||input.fire)playerFire()}
-function cameraUpdate(dt){let back=new THREE.Vector3(-Math.sin(player.rotation.y)*15,10,-Math.cos(player.rotation.y)*15);let desired=player.position.clone().add(back);camera.position.lerp(desired,1-Math.pow(.001,dt));let look=player.position.clone().add(new THREE.Vector3(0,1.1,0)).add(new THREE.Vector3(Math.sin(player.rotation.y)*3,0,Math.cos(player.rotation.y)*3));camera.lookAt(look);if(shake>0){camera.position.x+=rand(-shake,shake);camera.position.y+=rand(-shake,shake);shake=Math.max(0,shake-dt)}}
+function cameraUpdate(dt){let back=new THREE.Vector3(-Math.sin(player.rotation.y)*17,11,-Math.cos(player.rotation.y)*17);let desired=player.position.clone().add(back);camera.position.copy(desired);let look=player.position.clone().add(new THREE.Vector3(0,1.2,0)).add(new THREE.Vector3(Math.sin(player.rotation.y)*18,0,Math.cos(player.rotation.y)*18));camera.lookAt(look);if(shake>0){camera.position.x+=rand(-shake,shake);camera.position.y+=rand(-shake,shake);shake=Math.max(0,shake-dt)}}
 function loop(now){let dt=Math.min((now-(loop.last||now))/1000,.035);loop.last=now;update(dt);cameraUpdate(dt);try{renderer.render(scene,camera);if(renderer.info.render.calls===0){$('toast').textContent='RENDER WARNING // NO 3D OBJECTS';$('toast').style.opacity=1}}catch(err){console.error('STREET WAR render failure:',err);$('toast').textContent='3D RENDER ERROR // '+String(err.message||err).slice(0,70);$('toast').style.opacity=1}if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0}requestAnimationFrame(loop)}requestAnimationFrame(loop);
-function resize(){let w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.fov=w<650?73:65;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio||1,w<700?1.25:1.8));renderer.setSize(w,h,false);renderer.shadowMap.enabled=w>700}
+function resize(){let w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.fov=w<650?82:65;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio||1,w<700?1:1.5));renderer.setSize(w,h,false);renderer.shadowMap.enabled=w>700}
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,150));
 addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys[k]=true;if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='r'&&ended)start()});
 addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
