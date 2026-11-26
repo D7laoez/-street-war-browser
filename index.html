@@ -30,6 +30,8 @@
 </head>
 <body>
 <canvas id="game"></canvas><div id="damage"></div>
+<div id="asset-credit" style="position:fixed;left:8px;bottom:4px;z-index:2;pointer-events:none;color:#aeb9b5;font:8px 'DM Mono',monospace;text-shadow:0 1px 3px #000;opacity:.75">3D ASSETS: KENNEY CITY KIT · CC0</div>
+
 <div id="hud"><div class="top"><div class="brand">STREET WAR<small>OPERATION // BROKEN CITY 3D</small></div><div class="stats"><div class="stat"><label>SCORE</label><b id="score">000000</b></div><div class="stat"><label>WAVE</label><b class="acid" id="wave">01</b></div><div class="stat"><label>HOSTILES</label><b id="threats">00</b></div></div></div>
 <div class="bottom"><div class="objective">MISSION: <strong>BREAK THE PURSUIT</strong><br>ELIMINATE HOSTILES · SURVIVE THE DISTRICT</div><div class="meters"><div class="meter"><label>ARMOUR <span id="hptext">100%</span></label><div class="track"><i id="hpbar"></i></div></div><div class="meter"><label>NITRO <span id="nitrotext">100%</span></label><div class="track"><i id="nitrobar"></i></div></div></div></div></div>
 <div id="toast" role="status" aria-live="polite"></div><button id="pause" type="button" aria-label="Pause game">Ⅱ PAUSE</button>
@@ -51,13 +53,13 @@ const canvas=document.querySelector('#game'),$=id=>document.getElementById(id);
 const renderer=new THREE.WebGLRenderer({canvas,antialias:innerWidth>700,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1.25:1.8));renderer.setSize(innerWidth,innerHeight,false);
 renderer.shadowMap.enabled=innerWidth>700;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NoToneMapping;renderer.toneMappingExposure=1;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x263238);scene.fog=null;
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,900);
 const hemi=new THREE.HemisphereLight(0xbacbd0,0x30332d,2.0);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xffe1b4,2.7);sun.position.set(-90,130,70);sun.castShadow=renderer.shadowMap.enabled;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;scene.add(sun);
 const fill=new THREE.DirectionalLight(0x91b8d0,.65);fill.position.set(90,35,-80);scene.add(fill);
-const mat=(color,roughness=.85,metalness=0)=>new THREE.MeshBasicMaterial({color});
+const mat=(color,roughness=.85,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
 const asphalt=mat(0x252b2c),sidewalk=mat(0x77766d),concrete=mat(0x555b59),dark=mat(0x141a1c),glass=new THREE.MeshStandardMaterial({color:0x40575c,metalness:.5,roughness:.25}),rubber=mat(0x090c0d),lineMat=mat(0xc1b995),yellow=mat(0xd5ad54),windowMats=[mat(0x26383b,.35),mat(0x9b8060,.35),mat(0x53676b,.35)];
 const boxGeo=new THREE.BoxGeometry(1,1,1),cylGeo=new THREE.CylinderGeometry(.5,.5,1,12);
 function box(parent,x,y,z,sx,sy,sz,m,cast=false){let o=new THREE.Mesh(boxGeo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=cast;o.receiveShadow=true;parent.add(o);return o}
@@ -79,10 +81,10 @@ for(let f=0;f<floors;f++)for(let c=0;c<Math.max(2,Math.floor(d/5));c++){let zz=-
 box(g,-w*.2,h+.9,-d*.2,w*.24,1.2,d*.25,mat(0x252d2e),true);
 if(seed%3===0){let sign=box(g,0,3,d/2+.25,w*.42,1.1,.18,mat(seed%2?0x9b3b2e:0x315c58));}
 }
-const useMobileFallback=matchMedia('(max-width: 760px), (pointer: coarse)').matches;
+const useMobileFallback=false; // Always load authored GLB assets on mobile and desktop; procedural meshes are only a network-failure fallback.
 const gltfLoader=new GLTFLoader();
-const assetRoot='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
-const buildingAssetPaths=['residencial/predio_alto.glb','residencial/predio_apartamentos.glb','comercial/loja_esquina.glb','industrial/fabrica.glb','residencial/casa_sobrado.glb'];
+const assetRoot='https://raw.githubusercontent.com/petroulacl/fps-buildings-env-kit/main/buildings/kenney-city-kit-suburban/Models/GLB%20format/';
+const buildingAssetPaths=['building-type-a.glb','building-type-c.glb','building-type-e.glb','building-type-h.glb','building-type-n.glb','building-type-r.glb','building-type-t.glb','building-type-u.glb'];
 const buildingTemplates=[];
 function fitBuildingAsset(source,dims){
  const model=source.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
@@ -102,7 +104,7 @@ function installBuildingAssets(){
   g.add(fitBuildingAsset(source,dims));
  });
 }
-if(!useMobileFallback)buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
+buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
 let seed=0;
 for(let gx=-3;gx<3;gx++)for(let gz=-3;gz<3;gz++){let cx=gx*90+45,cz=gz*90+45;let w=rand(24,43),d=rand(24,42),h=rand(13,39);makeBuilding(cx,cz,w,d,h,seed++);if((gx+gz)%2===0)makeBuilding(cx+24,cz-24,13,13,rand(8,15),seed++);}
 function rand(a,b){return a+Math.random()*(b-a)}
@@ -144,7 +146,7 @@ function installCarVisual(root,police){
  }
 }
 let carTemplate=null;
-if(!useMobileFallback)gltfLoader.load(assetRoot+'veiculos/carro.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Vehicle asset failed; using fallback geometry',err));
+gltfLoader.load('https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/veiculos/carro.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Vehicle asset failed; using fallback geometry',err));
 const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
 const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
