@@ -44,6 +44,42 @@
   }
 }
 </script>
+<script>
+(()=> {
+ const canvas=document.getElementById('game'),button=document.getElementById('start'),overlay=document.getElementById('overlay');
+ let running=false,carX=0,carY=0,angle=0,speed=0,last=0,keys={};
+ const ctx=canvas.getContext('2d');
+ function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
+ addEventListener('resize',resize);resize();
+ addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+ addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+ function startFallback(){
+  running=true;overlay.style.display='none';carX=0;carY=0;angle=0;speed=0;
+  const toast=document.getElementById('toast');toast.textContent='2D SAFE MODE // GAME ACTIVE';toast.style.opacity=1;
+  setTimeout(()=>toast.style.opacity=0,1800);
+ }
+ button.addEventListener('click',()=>{if(!window.__streetWarReady)startFallback()});
+ function draw(t){
+  requestAnimationFrame(draw);if(!running)return;
+  const dt=Math.min((t-last)/1000||0,.04);last=t;
+  if(keys.w||keys.arrowup)speed=Math.min(220,speed+260*dt);else speed*=Math.pow(.94,dt*60);
+  if(keys.s||keys.arrowdown)speed=Math.max(-80,speed-220*dt);
+  if(keys.a||keys.arrowleft)angle-=2.2*dt*(.4+Math.abs(speed)/100);
+  if(keys.d||keys.arrowright)angle+=2.2*dt*(.4+Math.abs(speed)/100);
+  carX+=Math.sin(angle)*speed*dt;carY-=Math.cos(angle)*speed*dt;
+  const w=canvas.width,h=canvas.height,cx=w/2,cy=h/2;
+  ctx.fillStyle='#263238';ctx.fillRect(0,0,w,h);
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(-angle);ctx.translate(-carX,-carY);
+  ctx.fillStyle='#38413e';ctx.fillRect(carX-1800,carY-1800,3600,3600);
+  ctx.fillStyle='#252b2c';
+  for(let i=-8;i<=8;i++){ctx.fillRect(i*260-48,-2200,96,4400);ctx.fillRect(-2200,i*260-48,4400,96)}
+  for(let x=-7;x<=7;x++)for(let y=-7;y<=7;y++){if(Math.abs(x*260)<150||Math.abs(y*260)<150)continue;ctx.fillStyle=(x+y)%2?'#59615e':'#6b6b62';ctx.fillRect(x*260-75,y*260-75,150,150);ctx.fillStyle='#9b8060';for(let k=0;k<3;k++)ctx.fillRect(x*260-55+k*42,y*260-72,22,6)}
+  ctx.fillStyle='#d6ff45';ctx.fillRect(carX-17,carY-31,34,62);ctx.fillStyle='#182226';ctx.fillRect(carX-12,carY-20,24,18);
+  ctx.restore();
+ }
+ requestAnimationFrame(draw);
+})();
+</script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 (()=>{
@@ -202,7 +238,7 @@ stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)moveStick(e)})
 function moveStick(e){let r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.34,len=Math.hypot(dx,dy),s=len>max?max/len:1;dx*=s;dy*=s;knob.style.transform='translate('+dx+'px,'+dy+'px)';input.turn=THREE.MathUtils.clamp(dx/max,-1,1);input.forward=THREE.MathUtils.clamp(-dy/max,-1,1)}
 function releaseStick(){stickId=null;input.turn=0;input.forward=0;knob.style.transform='translate(0,0)'}
 ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>stick.addEventListener(ev,releaseStick));
-camera.position.set(0,12,20);camera.lookAt(0,0,0);updateHUD();document.addEventListener('click',e=>{const button=e.target.closest&&e.target.closest('#start');if(button){e.preventDefault();try{start()}catch(err){console.error('START FAILED',err);toast('START FAILED // '+String(err.message||err).slice(0,70))}}});
+window.__streetWarReady=true;cameraUpdate(0);updateHUD();document.addEventListener('click',e=>{const button=e.target.closest&&e.target.closest('#start');if(button){e.preventDefault();try{start()}catch(err){console.error('START FAILED',err);toast('START FAILED // '+String(err.message||err).slice(0,70))}}});
 })();
 </script>
 </body></html>
