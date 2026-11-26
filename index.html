@@ -104,7 +104,7 @@ for(let i=-3;i<=3;i++)for(let j=-3;j<=3;j++){for(let s of [-1,1]){let x=i*90+s*1
 for(let i=0;i<45;i++){let x=rand(-280,280),z=rand(-280,280);if(Math.abs(x%90)<16||Math.abs(z%90)<16)continue;let o=box(props,x,.65,z,rand(1,2.5),1.3,rand(1,2),i%2?dark:concrete);o.rotation.y=rand(0,3)}
 // procedural low-poly car with detailed body, glass, wheels and lights
 function buildCar(color=0xd6ff45,police=false){
-let root=new THREE.Group();root.userData.police=police;carRoots.add(root);if(carTemplate)installCarVisual(root,police);
+let root=new THREE.Group();root.userData.police=police;carRoots.add(root);
 let bodyMat=mat(color,.4,.35),trim=mat(0x151b1e,.65,.25),wheelMat=rubber;
 box(root,0,.72,0,2.15,.72,4.25,bodyMat,true);box(root,0,1.22,-.18,1.8,.72,2.25,bodyMat,true);
 box(root,0,1.27,.95,1.65,.52,.12,glass);box(root,0,1.27,-1.32,1.65,.52,.12,glass);
@@ -114,7 +114,7 @@ for(let x of [-1.03,1.03])for(let z of [-1.35,1.35]){let w=new THREE.Mesh(cylGeo
 for(let x of [-.72,.72]){box(root,x,.79,2.15,.38,.18,.12,mat(0xffedc0,.25));box(root,x,.79,-2.15,.38,.18,.12,mat(0xff322b,.3));}
 box(root,0,.93,-1.65,1.5,.16,.24,trim);
 if(police){box(root,0,1.68,-.2,1.05,.12,.35,mat(0x111719));box(root,-.36,1.8,-.2,.32,.18,.28,mat(0x286dff,.25));box(root,.36,1.8,-.2,.32,.18,.28,mat(0xff2525,.25));}
-root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return root;
+if(carTemplate)installCarVisual(root,police);root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return root;
 }
 const carRoots=new Set();
 function installCarVisual(root,police){
