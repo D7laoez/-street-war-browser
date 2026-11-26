@@ -46,19 +46,18 @@
 </script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 (()=>{
 'use strict';
 const canvas=document.querySelector('#game'),$=id=>document.getElementById(id);
 const renderer=new THREE.WebGLRenderer({canvas,antialias:innerWidth>700,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1:1.5));renderer.setSize(innerWidth,innerHeight,false);renderer.setClearColor(0x263238,1);
-renderer.shadowMap.enabled=innerWidth>700;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.BasicShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x263238);scene.fog=null;
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,900);
-const hemi=new THREE.HemisphereLight(0xbacbd0,0x30332d,2.0);scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xffe1b4,2.7);sun.position.set(-90,130,70);sun.castShadow=renderer.shadowMap.enabled;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;scene.add(sun);
-const fill=new THREE.DirectionalLight(0x91b8d0,.65);fill.position.set(90,35,-80);scene.add(fill);
+const hemi=new THREE.HemisphereLight(0xbacbd0,0x30332d,1.45);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffe1b4,1.65);sun.position.set(-90,130,70);sun.castShadow=renderer.shadowMap.enabled;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;scene.add(sun);
+const fill=new THREE.DirectionalLight(0x91b8d0,.4);fill.position.set(90,35,-80);scene.add(fill);
 const mat=(color,roughness=.85,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
 const asphalt=mat(0x252b2c),sidewalk=mat(0x77766d),concrete=mat(0x555b59),dark=mat(0x141a1c),glass=new THREE.MeshStandardMaterial({color:0x40575c,metalness:.5,roughness:.25}),rubber=mat(0x090c0d),lineMat=mat(0xc1b995),yellow=mat(0xd5ad54),windowMats=[mat(0x26383b,.35),mat(0x9b8060,.35),mat(0x53676b,.35)];
 const boxGeo=new THREE.BoxGeometry(1,1,1),cylGeo=new THREE.CylinderGeometry(.5,.5,1,12);
@@ -82,7 +81,7 @@ box(g,-w*.2,h+.9,-d*.2,w*.24,1.2,d*.25,mat(0x252d2e),true);
 if(seed%3===0){let sign=box(g,0,3,d/2+.25,w*.42,1.1,.18,mat(seed%2?0x9b3b2e:0x315c58));}
 }
 const useMobileFallback=false; // Always load authored GLB assets on mobile and desktop; procedural meshes are only a network-failure fallback.
-const gltfLoader=new GLTFLoader();
+const gltfLoader=null; // External GLB loading paused until mobile rendering is stable.
 const assetRoot='https://raw.githubusercontent.com/Hidencod/tge-assets/main/packs/city-kit-commercial/';
 const buildingAssetPaths=['building-a.glb','building-c.glb','building-e.glb','building-g.glb','building-i.glb','building-k.glb','building-m.glb','building-n.glb','building-skyscraper-a.glb','building-skyscraper-c.glb','building-skyscraper-e.glb'];
 const buildingTemplates=[];
@@ -104,7 +103,7 @@ function installBuildingAssets(){
   g.add(fitBuildingAsset(source,dims));
  });
 }
-buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
+// Keep deterministic procedural building meshes visible. GLB replacement is disabled while diagnosing mobile GPU rendering.
 let seed=0;
 for(let gx=-3;gx<3;gx++)for(let gz=-3;gz<3;gz++){let cx=gx*90+45,cz=gz*90+45;let w=rand(24,43),d=rand(24,42),h=rand(13,39);makeBuilding(cx,cz,w,d,h,seed++);if((gx+gz)%2===0)makeBuilding(cx+24,cz-24,13,13,rand(8,15),seed++);}
 // Close-range street frontage: keep recognizable buildings inside the mobile follow-camera view.
@@ -112,7 +111,7 @@ makeBuilding(-19,-34,13,17,27,seed++);makeBuilding(19,-34,13,17,34,seed++);makeB
 function rand(a,b){return a+Math.random()*(b-a)}
 // lamps, traffic signals, roadside clutter
 const props=new THREE.Group();scene.add(props);
-for(let i=-3;i<=3;i++)for(let j=-3;j<=3;j++){for(let s of [-1,1]){let x=i*90+s*16,z=j*90+16;let pole=new THREE.Mesh(cylGeo,mat(0x202729));pole.position.set(x,4,z);pole.scale.set(.13,8,.13);props.add(pole);box(props,x,8,z,1.5,.15,.15,yellow);let bulb=new THREE.PointLight(0xffd18a,1.2,19);bulb.position.set(x,7.4,z);props.add(bulb);}}
+for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++){for(let s of [-1,1]){let x=i*90+s*16,z=j*90+16;let pole=new THREE.Mesh(cylGeo,mat(0x202729));pole.position.set(x,4,z);pole.scale.set(.13,8,.13);props.add(pole);box(props,x,8,z,1.5,.15,.15,yellow);}}
 for(let i=0;i<45;i++){let x=rand(-280,280),z=rand(-280,280);if(Math.abs(x%90)<16||Math.abs(z%90)<16)continue;let o=box(props,x,.65,z,rand(1,2.5),1.3,rand(1,2),i%2?dark:concrete);o.rotation.y=rand(0,3)}
 // procedural low-poly car with detailed body, glass, wheels and lights
 function buildCar(color=0xd6ff45,police=false){
@@ -149,8 +148,7 @@ function installCarVisual(root,police){
 }
 let carTemplate=null,policeCarTemplate=null;
 const vehicleAssetRoot='https://raw.githubusercontent.com/Hidencod/tge-assets/main/packs/car-kit/';
-gltfLoader.load(vehicleAssetRoot+'sedan.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Sedan GLB failed; using detailed fallback car',err));
-gltfLoader.load(vehicleAssetRoot+'police.glb',g=>{policeCarTemplate=g.scene;carRoots.forEach(root=>{if(root.userData.police)installCarVisual(root,true)})},undefined,err=>console.warn('Police GLB failed; using sedan fallback',err));
+// Keep procedural player and police vehicles active; no async model replacement during mobile GPU diagnosis.
 const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
 const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
@@ -187,7 +185,10 @@ updateHUD();
 }
 function playerFireCooldown(dt){fireT=Math.max(0,fireT-dt);if(keys[' ']||input.fire)playerFire()}
 function cameraUpdate(dt){let back=new THREE.Vector3(-Math.sin(player.rotation.y)*17,11,-Math.cos(player.rotation.y)*17);let desired=player.position.clone().add(back);camera.position.copy(desired);let look=player.position.clone().add(new THREE.Vector3(0,1.2,0)).add(new THREE.Vector3(Math.sin(player.rotation.y)*18,0,Math.cos(player.rotation.y)*18));camera.lookAt(look);if(shake>0){camera.position.x+=rand(-shake,shake);camera.position.y+=rand(-shake,shake);shake=Math.max(0,shake-dt)}}
-function loop(now){let dt=Math.min((now-(loop.last||now))/1000,.035);loop.last=now;update(dt);cameraUpdate(dt);try{renderer.render(scene,camera);if(renderer.info.render.calls===0){$('toast').textContent='RENDER WARNING // NO 3D OBJECTS';$('toast').style.opacity=1}}catch(err){console.error('STREET WAR render failure:',err);$('toast').textContent='3D RENDER ERROR // '+String(err.message||err).slice(0,70);$('toast').style.opacity=1}if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0}requestAnimationFrame(loop)}requestAnimationFrame(loop);
+function loop(now){let dt=Math.min((now-(loop.last||now))/1000,.035);loop.last=now;update(dt);cameraUpdate(dt);try{renderer.render(scene,camera);if(renderer.info.render.calls===0){$('toast').textContent='RENDER WARNING // NO 3D OBJECTS';$('toast').style.opacity=1}}catch(err){console.error('STREET WAR render failure:',err);$('toast').textContent='3D RENDER ERROR // '+String(err.message||err).slice(0,70);$('toast').style.opacity=1}if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0}requestAnimationFrame(loop)}
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();$('toast').textContent='GPU CONTEXT LOST // REDUCE GRAPHICS LOAD';$('toast').style.opacity=1;console.error('WebGL context lost')});
+renderer.getContext().getExtension('WEBGL_lose_context')?.isContextLost();
+requestAnimationFrame(loop);
 function resize(){let w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.fov=w<650?82:65;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio||1,w<700?1:1.5));renderer.setSize(w,h,false);renderer.shadowMap.enabled=w>700}
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,150));
 addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys[k]=true;if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='r'&&ended)start()});
