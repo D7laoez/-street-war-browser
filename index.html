@@ -131,7 +131,7 @@ stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)moveStick(e)})
 function moveStick(e){let r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.34,len=Math.hypot(dx,dy),s=len>max?max/len:1;dx*=s;dy*=s;knob.style.transform='translate('+dx+'px,'+dy+'px)';input.turn=THREE.MathUtils.clamp(dx/max,-1,1);input.forward=THREE.MathUtils.clamp(-dy/max,-1,1)}
 function releaseStick(){stickId=null;input.turn=0;input.forward=0;knob.style.transform='translate(0,0)'}
 ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>stick.addEventListener(ev,releaseStick));
-camera.position.set(0,8,-13);camera.lookAt(0,0,0);updateHUD();
+camera.position.set(0,8,-13);camera.lookAt(0,0,0);updateHUD();$('start').onclick=start;
 })();
 </script>
 </body></html>
