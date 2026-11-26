@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#090d12">
+<meta name="description" content="STREET WAR: Broken City — a 3D urban combat driving game. Play on desktop or mobile.">
+<meta name="color-scheme" content="dark">
 <title>STREET WAR // BROKEN CITY 3D</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
@@ -20,6 +22,8 @@
 .knob{position:absolute;width:42%;height:42%;left:29%;top:29%;border-radius:50%;background:#d6ff45aa;border:2px solid #efffa8;box-shadow:0 2px 12px #0009;pointer-events:none}
 .actions{display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:auto}.actionrow{display:flex;gap:9px;align-items:center}.touchbtn{border:1px solid #d6ff4580;background:#09131bd9;color:#eaff8a;border-radius:50%;width:clamp(58px,16vw,78px);height:clamp(58px,16vw,78px);font:800 10px 'DM Mono';touch-action:none;box-shadow:0 4px 18px #0009}.touchbtn.fire{width:clamp(72px,19vw,92px);height:clamp(72px,19vw,92px);background:#b42b24d9;border-color:#ff766b;color:#fff}.touchbtn:active{filter:brightness(1.4)}
 #damage{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse,transparent 40%,#ff16162b 100%);opacity:0;transition:opacity .1s}
+#pause{position:fixed;z-index:4;right:16px;top:calc(74px + env(safe-area-inset-top));pointer-events:auto;background:#09131bd9;color:#eaff8a;border:1px solid #d6ff4580;padding:8px 12px;font:700 10px 'DM Mono';cursor:pointer}
+#pause:focus-visible,.action:focus-visible,.touchbtn:focus-visible{outline:2px solid white;outline-offset:3px}
 @media(max-width:760px),(pointer:coarse){#mobile{display:flex}.objective{display:none}.stats{gap:9px}.stat label{font-size:7px}.stat b{font-size:20px}.brand{font-size:27px}.brand small{font-size:7px}.meters{gap:7px}.meter{width:94px}.meter label{font-size:7px}}
 @media(orientation:portrait) and (max-width:760px){.top{align-items:flex-start}.stats{gap:7px}.brand{font-size:23px}.meter{width:82px}#mobile{padding:0 12px}.stick{width:108px;height:108px}.touchbtn{width:56px;height:56px}.touchbtn.fire{width:70px;height:70px}}
 </style>
@@ -28,9 +32,9 @@
 <canvas id="game"></canvas><div id="damage"></div>
 <div id="hud"><div class="top"><div class="brand">STREET WAR<small>OPERATION // BROKEN CITY 3D</small></div><div class="stats"><div class="stat"><label>SCORE</label><b id="score">000000</b></div><div class="stat"><label>WAVE</label><b class="acid" id="wave">01</b></div><div class="stat"><label>HOSTILES</label><b id="threats">00</b></div></div></div>
 <div class="bottom"><div class="objective">MISSION: <strong>BREAK THE PURSUIT</strong><br>ELIMINATE HOSTILES · SURVIVE THE DISTRICT</div><div class="meters"><div class="meter"><label>ARMOUR <span id="hptext">100%</span></label><div class="track"><i id="hpbar"></i></div></div><div class="meter"><label>NITRO <span id="nitrotext">100%</span></label><div class="track"><i id="nitrobar"></i></div></div></div></div></div>
-<div id="toast"></div>
-<div id="mobile"><div class="stick" id="stick"><div class="knob" id="knob"></div></div><div class="actions"><div class="actionrow"><button class="touchbtn" data-hold="nitro">NITRO</button><button class="touchbtn fire" data-hold="fire">FIRE</button></div><div class="actionrow"><button class="touchbtn" data-hold="brake">BRAKE</button><button class="touchbtn" data-hold="drive">DRIVE</button></div></div></div>
-<div id="overlay"><div class="panel" id="panel"><div class="kicker">DISTRICT 09 / NIGHT OPERATIONS</div><h1>WELCOME TO<br><span>THE WARZONE.</span></h1><p>A hostile city. Armed patrols. No safe route out. Drive through the streets, evade enemy vehicles and fight back. This is a real-time 3D browser build with a follow camera and touch controls.</p><div class="keys"><span class="key"><b>W / S</b> DRIVE / BRAKE</span><span class="key"><b>A / D</b> STEER</span><span class="key"><b>SPACE</b> FIRE</span><span class="key"><b>SHIFT</b> NITRO</span></div><button class="action" id="start">DEPLOY // ENTER CITY</button><p class="hint">DESKTOP: KEYBOARD + MOUSE · MOBILE: ON-SCREEN JOYSTICK + ACTION BUTTONS</p></div></div>
+<div id="toast" role="status" aria-live="polite"></div><button id="pause" type="button" aria-label="Pause game">Ⅱ PAUSE</button>
+<div id="mobile"><div class="stick" id="stick"><div class="knob" id="knob"></div></div><div class="actions"><div class="actionrow"><button class="touchbtn" data-hold="nitro">NITRO</button><button class="touchbtn fire" data-hold="fire">FIRE</button></div><div class="actionrow"><button class="touchbtn" data-hold="brake">BRAKE</button><button class="touchbtn" data-hold="drive" aria-label="Accelerate">DRIVE</button></div></div></div>
+<div id="overlay"><div class="panel" id="panel"><div class="kicker">DISTRICT 09 / NIGHT OPERATIONS</div><h1>WELCOME TO<br><span>THE WARZONE.</span></h1><p>A hostile city. Armed patrols. No safe route out. Drive through the streets, evade enemy vehicles and fight back. This is a real-time 3D browser build with a follow camera and touch controls.</p><div class="keys"><span class="key"><b>W / S</b> DRIVE / BRAKE</span><span class="key"><b>A / D</b> STEER</span><span class="key"><b>SPACE</b> FIRE</span><span class="key"><b>SHIFT</b> NITRO</span></div><button class="action" id="start">DEPLOY // ENTER CITY</button><p class="hint">DESKTOP: W/↑ DRIVE · S/↓ REVERSE · A/D STEER · SPACE FIRE · SHIFT NITRO · B BRAKE · ESC PAUSE<br>MOBILE: JOYSTICK + DRIVE / BRAKE / FIRE / NITRO</p></div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 (()=>{
@@ -57,7 +61,7 @@ for(let j=-16;j<=16;j++){let q=j*20;box(roads,p,.07,q, .16,.025,5,lineMat);box(r
 const city=new THREE.Group();scene.add(city);
 const buildingMats=[mat(0x515957),mat(0x68675f),mat(0x444e50),mat(0x777064),mat(0x3c484a),mat(0x5c6260)];
 function makeBuilding(x,z,w,d,h,seed){
-let g=new THREE.Group();g.position.set(x,0,z);city.add(g);let bm=buildingMats[seed%buildingMats.length];
+let g=new THREE.Group();g.position.set(x,0,z);g.userData.bounds={halfWidth:w/2+1,halfDepth:d/2+1};city.add(g);let bm=buildingMats[seed%buildingMats.length];
 box(g,0,h/2,0,w,h,d,bm,true);box(g,0,h+.4,0,w+1,.8,d+1,mat(0x303638),true);
 box(g,0,.45,d/2+.12,w,.9,.25,concrete);
 const floors=Math.max(2,Math.floor(h/4.2)),cols=Math.max(2,Math.floor(w/4));
@@ -89,33 +93,37 @@ root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return 
 }
 const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
-const input={forward:0,turn:0,brake:false,nitro:false,fire:false};let keys={};
+const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
 function spawnEnemy(){let angle=rand(0,Math.PI*2),dist=rand(55,100),x=player.position.x+Math.sin(angle)*dist,z=player.position.z+Math.cos(angle)*dist;let car=buildCar(Math.random()<.5?0x873c36:0x555e61,true);car.position.set(x,0,z);scene.add(car);enemyCars.push({mesh:car,hp:2+Math.floor(wave/3),speed:rand(8,13)+wave*.5,fire:rand(1,2.8),hit:0});}
 function updateHUD(){$('score').textContent=String(score).padStart(6,'0');$('wave').textContent=String(wave).padStart(2,'0');$('threats').textContent=String(enemyCars.length).padStart(2,'0');$('hptext').textContent=Math.ceil(hp)+'%';$('hpbar').style.width=hp+'%';$('hpbar').style.background=hp<30?'#ff4b45':'#d6ff45';$('nitrotext').textContent=Math.ceil(nitro)+'%';$('nitrobar').style.width=nitro+'%'}
 function toast(t){$('toast').textContent=t;$('toast').style.opacity=1;toastT=1.5}
 function addShot(from,to,enemy=false){let d=new THREE.Vector3().subVectors(to,from).normalize();let mesh=new THREE.Mesh(new THREE.SphereGeometry(.13,8,8),mat(enemy?0xff4a3d:0xdfff73,.3,.1));mesh.position.copy(from);scene.add(mesh);shots.push({mesh,vel:d.multiplyScalar(enemy?43:78),life:2,enemy});}
 function playerFire(){if(fireT>0||!enemyCars.length)return;let target=null,best=95;for(let e of enemyCars){let d=player.position.distanceTo(e.mesh.position);if(d<best){best=d;target=e}}if(!target)return;let origin=player.position.clone().add(new THREE.Vector3(0,1.25,0));let aim=target.mesh.position.clone().add(new THREE.Vector3(0,.8,0));addShot(origin,aim,false);fireT=.22}
-function damagePlayer(n){hp-=n;shake=.3;$('damage').style.opacity='.8';setTimeout(()=>$('damage').style.opacity='0',100);if(hp<=0){hp=0;finish()}updateHUD()}
-function finish(){active=false;ended=true;$('overlay').style.display='grid';$('panel').innerHTML='<div class="kicker">MISSION FAILED / DISTRICT 09</div><h1>THE CITY<br><span>WON THIS TIME.</span></h1><p>Final score: '+String(score).padStart(6,'0')+'<br>Reached wave '+wave+'. Rebuild your run and take the streets back.</p><button class="action" id="start">REDEPLOY // RETRY</button>';$('start').onclick=start}
-function start(){score=0;wave=1;hp=100;nitro=100;player.position.set(0,0,0);player.rotation.y=Math.PI;player.userData.speed=0;enemyCars.forEach(e=>scene.remove(e.mesh));enemyCars.length=0;shots.forEach(s=>scene.remove(s.mesh));shots.length=0;for(let i=0;i<4;i++)spawnEnemy();spawnT=2;ended=false;active=true;$('overlay').style.display='none';updateHUD();toast('DISTRICT 09 // GO')}
+function damagePlayer(n){if(!active||n<=0)return;hp=Math.max(0,hp-n);shake=Math.max(shake,.3);$('damage').style.opacity='.8';if(hp<=0)finish();updateHUD()}
+function finish(){active=false;ended=true;input.forward=0;input.turn=0;input.drive=false;input.fire=false;input.nitro=false;input.brake=false;keys={};$('overlay').style.display='grid';$('panel').innerHTML='<div class="kicker">MISSION FAILED / DISTRICT 09</div><h1>THE CITY<br><span>WON THIS TIME.</span></h1><p>Final score: '+String(score).padStart(6,'0')+'<br>Reached wave '+wave+'. Rebuild your run and take the streets back.</p><button class="action" id="start">REDEPLOY // RETRY</button>';$('start').onclick=start}
+function start(){score=0;wave=1;hp=100;nitro=100;collisionCooldown=0;input.forward=0;input.turn=0;input.drive=false;input.fire=false;input.nitro=false;input.brake=false;keys={};player.position.set(0,0,0);player.rotation.y=Math.PI;player.userData.speed=0;enemyCars.forEach(e=>scene.remove(e.mesh));enemyCars.length=0;shots.forEach(s=>scene.remove(s.mesh));shots.length=0;for(let i=0;i<4;i++)spawnEnemy();spawnT=2;ended=false;active=true;$('overlay').style.display='none';updateHUD();toast('DISTRICT 09 // GO')}
 function update(dt){
 if(!active)return;
-const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)+(input.forward||0),turn=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+input.turn;
-const braking=keys[' ']||input.brake,boost=keys.shift||input.nitro;
+const forward=THREE.MathUtils.clamp((keys.w||keys.arrowup||input.drive?1:0)-(keys.s||keys.arrowdown?1:0)+(input.forward||0),-1,1),turn=THREE.MathUtils.clamp((keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+input.turn,-1,1);
+const braking=keys.b||keys.control||input.brake,boost=keys.shift||input.nitro;
 let speed=player.userData.speed||0;let accel=forward>0?23:forward<0?-18:0;if(boost&&nitro>0&&forward>0){accel*=1.7;nitro=Math.max(0,nitro-34*dt)}else nitro=Math.min(100,nitro+11*dt);
 speed+=accel*dt;if(braking)speed*=Math.pow(.91,dt*60);else speed*=Math.pow(.988,dt*60);speed=THREE.MathUtils.clamp(speed,-9,boost?37:25);player.userData.speed=speed;
 player.rotation.y+=turn*dt*(.9+Math.min(Math.abs(speed)/15,1.3))*(speed<0?-1:1);
-let dir=new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y));player.position.addScaledVector(dir,speed*dt);
-player.position.x=THREE.MathUtils.clamp(player.position.x,-320,320);player.position.z=THREE.MathUtils.clamp(player.position.z,-320,320);
+let dir=new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y));const previousPosition=player.position.clone();player.position.addScaledVector(dir,speed*dt);
+// Building collision: restore the previous position and apply a short damage cooldown.
+let blocked=false;for(const b of city.children){const bounds=b.userData.bounds;if(!bounds)continue;const dx=player.position.x-b.position.x,dz=player.position.z-b.position.z;if(Math.abs(dx)<bounds.halfWidth+1.25&&Math.abs(dz)<bounds.halfDepth+2.25){blocked=true;break}}
+if(blocked){player.position.copy(previousPosition);player.userData.speed*=-.22;if(collisionCooldown<=0){damagePlayer(5);collisionCooldown=.65}}
+if(Math.abs(player.position.x)>320||Math.abs(player.position.z)>320){player.position.copy(previousPosition);player.userData.speed=0;if(collisionCooldown<=0){damagePlayer(2);collisionCooldown=.5}}
+collisionCooldown=Math.max(0,collisionCooldown-dt);
 playerFireCooldown(dt);
 spawnT-=dt;if(spawnT<=0&&enemyCars.length<Math.min(4+wave*2,15)){spawnEnemy();spawnT=Math.max(.65,2.3-wave*.08)}
-for(let i=enemyCars.length-1;i>=0;i--){let e=enemyCars[i],v=new THREE.Vector3().subVectors(player.position,e.mesh.position);v.y=0;let d=v.length();let desired=Math.atan2(v.x,v.z),diff=Math.atan2(Math.sin(desired-e.mesh.rotation.y),Math.cos(desired-e.mesh.rotation.y));e.mesh.rotation.y+=THREE.MathUtils.clamp(diff,-1.6*dt,1.6*dt);e.mesh.position.add(new THREE.Vector3(Math.sin(e.mesh.rotation.y),0,Math.cos(e.mesh.rotation.y)).multiplyScalar(e.speed*dt));e.fire-=dt;if(e.fire<=0&&d<62){addShot(e.mesh.position.clone().add(new THREE.Vector3(0,1.1,0)),player.position.clone().add(new THREE.Vector3(0,1,0)),true);e.fire=rand(1.6,2.7)}if(d<3.2)damagePlayer(11*dt);}
+for(let i=enemyCars.length-1;i>=0;i--){let e=enemyCars[i],v=new THREE.Vector3().subVectors(player.position,e.mesh.position);v.y=0;let d=v.length();let desired=Math.atan2(v.x,v.z),diff=Math.atan2(Math.sin(desired-e.mesh.rotation.y),Math.cos(desired-e.mesh.rotation.y));e.mesh.rotation.y+=THREE.MathUtils.clamp(diff,-1.6*dt,1.6*dt);e.mesh.position.add(new THREE.Vector3(Math.sin(e.mesh.rotation.y),0,Math.cos(e.mesh.rotation.y)).multiplyScalar(e.speed*dt));e.fire-=dt;if(e.fire<=0&&d<62){addShot(e.mesh.position.clone().add(new THREE.Vector3(0,1.1,0)),player.position.clone().add(new THREE.Vector3(0,1,0)),true);e.fire=rand(1.6,2.7)}if(d<3.2){damagePlayer(8*dt);if(d<2.1){const push=v.normalize();player.position.addScaledVector(push,7*dt);e.mesh.position.addScaledVector(push,-3*dt)}}}
 for(let i=shots.length-1;i>=0;i--){let s=shots[i];s.mesh.position.addScaledVector(s.vel,dt);s.life-=dt;let remove=s.life<=0||s.mesh.position.length()>600;
 if(!s.enemy){for(let j=enemyCars.length-1;j>=0;j--){let e=enemyCars[j];if(s.mesh.position.distanceTo(e.mesh.position.clone().add(new THREE.Vector3(0,.8,0)))<2.3){e.hp--;remove=true;if(e.hp<=0){scene.remove(e.mesh);enemyCars.splice(j,1);score+=100;updateHUD();if(Math.random()<.3)hp=Math.min(100,hp+5)}break}}}
 else if(s.mesh.position.distanceTo(player.position.clone().add(new THREE.Vector3(0,.8,0)))<2.1){damagePlayer(8);remove=true}
 if(remove){scene.remove(s.mesh);shots.splice(i,1)}}
 if(enemyCars.length===0){wave++;score+=250;for(let i=0;i<Math.min(3+wave,9);i++)spawnEnemy();toast('WAVE '+String(wave).padStart(2,'0')+' // HOSTILES INBOUND')}
-fireT=Math.max(0,fireT-dt);updateHUD();
+updateHUD();
 }
 function playerFireCooldown(dt){fireT=Math.max(0,fireT-dt);if(keys[' ']||input.fire)playerFire()}
 function cameraUpdate(dt){let back=new THREE.Vector3(-Math.sin(player.rotation.y)*10,6.2,-Math.cos(player.rotation.y)*10);let desired=player.position.clone().add(back);camera.position.lerp(desired,1-Math.pow(.001,dt));let look=player.position.clone().add(new THREE.Vector3(0,1.4,0)).add(new THREE.Vector3(Math.sin(player.rotation.y)*5,0,Math.cos(player.rotation.y)*5));camera.lookAt(look);if(shake>0){camera.position.x+=rand(-shake,shake);camera.position.y+=rand(-shake,shake);shake=Math.max(0,shake-dt)}}
@@ -124,6 +132,8 @@ function resize(){let w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.fov=w<
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,150));
 addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys[k]=true;if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='r'&&ended)start()});
 addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function pauseGame(){if(!active)return;active=false;$('overlay').style.display='grid';$('panel').innerHTML='<div class="kicker">DISTRICT 09 / PAUSED</div><h1>TAKE A<br><span>BREATHER.</span></h1><p>Your run is paused. Resume when ready.</p><button class="action" id="resume">RESUME // CONTINUE</button>';document.getElementById('resume').onclick=()=>{$('overlay').style.display='none';active=true};}
+$('pause').addEventListener('click',pauseGame);addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();if(active)pauseGame();else if(!ended&&$('overlay').style.display!=='none'){const resume=document.getElementById('resume');if(resume)resume.click()}}});
 document.querySelectorAll('[data-hold]').forEach(b=>{let k=b.dataset.hold;const on=e=>{e.preventDefault();input[k]=true},off=()=>input[k]=false;b.addEventListener('pointerdown',on);['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,off))});
 const stick=$('stick'),knob=$('knob');let stickId=null;
 stick.addEventListener('pointerdown',e=>{stickId=e.pointerId;stick.setPointerCapture(stickId);moveStick(e)});
