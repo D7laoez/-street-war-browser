@@ -30,7 +30,7 @@
 </head>
 <body>
 <canvas id="game"></canvas><div id="damage"></div>
-<div id="asset-credit" style="position:fixed;left:8px;bottom:4px;z-index:2;pointer-events:none;color:#aeb9b5;font:8px 'DM Mono',monospace;text-shadow:0 1px 3px #000;opacity:.75">3D ASSETS: KENNEY CITY KIT · CC0</div>
+<div id="asset-credit" style="position:fixed;left:8px;bottom:4px;z-index:2;pointer-events:none;color:#aeb9b5;font:8px 'DM Mono',monospace;text-shadow:0 1px 3px #000;opacity:.75">3D ASSETS: KENNEY CITY COMMERCIAL + CAR KIT · CC0</div>
 
 <div id="hud"><div class="top"><div class="brand">STREET WAR<small>OPERATION // BROKEN CITY 3D</small></div><div class="stats"><div class="stat"><label>SCORE</label><b id="score">000000</b></div><div class="stat"><label>WAVE</label><b class="acid" id="wave">01</b></div><div class="stat"><label>HOSTILES</label><b id="threats">00</b></div></div></div>
 <div class="bottom"><div class="objective">MISSION: <strong>BREAK THE PURSUIT</strong><br>ELIMINATE HOSTILES · SURVIVE THE DISTRICT</div><div class="meters"><div class="meter"><label>ARMOUR <span id="hptext">100%</span></label><div class="track"><i id="hpbar"></i></div></div><div class="meter"><label>NITRO <span id="nitrotext">100%</span></label><div class="track"><i id="nitrobar"></i></div></div></div></div></div>
@@ -83,8 +83,8 @@ if(seed%3===0){let sign=box(g,0,3,d/2+.25,w*.42,1.1,.18,mat(seed%2?0x9b3b2e:0x31
 }
 const useMobileFallback=false; // Always load authored GLB assets on mobile and desktop; procedural meshes are only a network-failure fallback.
 const gltfLoader=new GLTFLoader();
-const assetRoot='https://raw.githubusercontent.com/petroulacl/fps-buildings-env-kit/main/buildings/kenney-city-kit-suburban/Models/GLB%20format/';
-const buildingAssetPaths=['building-type-a.glb','building-type-c.glb','building-type-e.glb','building-type-h.glb','building-type-n.glb','building-type-r.glb','building-type-t.glb','building-type-u.glb'];
+const assetRoot='https://raw.githubusercontent.com/Hidencod/tge-assets/main/packs/city-kit-commercial/';
+const buildingAssetPaths=['building-a.glb','building-c.glb','building-e.glb','building-g.glb','building-i.glb','building-k.glb','building-m.glb','building-n.glb','building-skyscraper-a.glb','building-skyscraper-c.glb','building-skyscraper-e.glb'];
 const buildingTemplates=[];
 function fitBuildingAsset(source,dims){
  const model=source.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
@@ -128,9 +128,9 @@ if(carTemplate)installCarVisual(root,police);root.traverse(o=>{if(o.isMesh){o.ca
 }
 const carRoots=new Set();
 function installCarVisual(root,police){
- if(!carTemplate)return;
+ const source=police&&policeCarTemplate?policeCarTemplate:carTemplate;if(!source)return;
  while(root.children.length)root.remove(root.children[0]);
- const model=carTemplate.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+ const model=source.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
  if(size.x&&size.y&&size.z){
   const sx=2.15/size.x,sy=1.75/size.y,sz=4.25/size.z;
   model.scale.set(sx,sy,sz);
@@ -145,8 +145,10 @@ function installCarVisual(root,police){
   box(root,.36,1.8,-.2,.32,.18,.28,mat(0xff2525,.25));
  }
 }
-let carTemplate=null;
-gltfLoader.load('https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/veiculos/carro.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Vehicle asset failed; using fallback geometry',err));
+let carTemplate=null,policeCarTemplate=null;
+const vehicleAssetRoot='https://raw.githubusercontent.com/Hidencod/tge-assets/main/packs/car-kit/';
+gltfLoader.load(vehicleAssetRoot+'sedan.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Sedan GLB failed; using detailed fallback car',err));
+gltfLoader.load(vehicleAssetRoot+'police.glb',g=>{policeCarTemplate=g.scene;carRoots.forEach(root=>{if(root.userData.police)installCarVisual(root,true)})},undefined,err=>console.warn('Police GLB failed; using sedan fallback',err));
 const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
 const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
