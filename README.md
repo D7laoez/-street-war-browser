@@ -1,10 +1,10 @@
 # STREET WAR — BROKEN CITY 3D
 
-A browser-based 3D urban driving-combat game built with Three.js and procedural geometry. It runs as a static site and supports desktop keyboards and mobile touch controls.
+A browser-based 3D urban driving-combat game built with Three.js. It runs as a static site and supports desktop keyboards and mobile touch controls.
 
 ## Play
 
-Open the production site on Vercel or serve this repository with any static HTTP server. The Three.js ES module is loaded from jsDelivr, so an internet connection is required.
+Open the production site on Vercel or serve this repository with any static HTTP server. Three.js and GLTFLoader are loaded as ES modules from jsDelivr; the CC0 GLB models are streamed from the upstream asset repository, so an internet connection is required.
 
 ## Controls
 
@@ -28,17 +28,23 @@ Open the production site on Vercel or serve this repository with any static HTTP
 ## Gameplay systems
 
 - Third-person chase camera and responsive WebGL renderer
-- Procedurally generated city blocks, roads, sidewalks, windows, street lights and roadside props
-- Player and hostile vehicles assembled from 3D meshes
+- City blocks populated with external GLB building models instead of the former box-only building placeholders
+- Player and hostile vehicles use a shared GLB car model, with procedural fallback geometry if the asset cannot load
 - Hostile pursuit, enemy projectiles, target acquisition and escalating waves
 - Player armour, nitro, score, collision damage and mission-failure/retry flow
-- Building collision checks, vehicle-to-vehicle contact and world-boundary handling
-- Pause/resume flow and touch controls with pointer-cancel handling
+- Building collision bounds, vehicle-to-vehicle contact and world-boundary handling
+- Pause/resume flow and mobile pointer controls
 - Adaptive pixel ratio and reduced shadow cost on smaller screens
+
+## 3D asset credits and license
+
+The city buildings and car are loaded from **[Low Poly City Kit](https://github.com/kayquer/kit-cidade-lowpoly)** by Kayquer. The repository declares the pack as **CC0 1.0** (public domain), allowing modification and commercial use without attribution requirements. Credits are included here as a courtesy.
+
+The imported pack is stylized low-poly geometry, not photogrammetry or photorealistic AAA assets. It replaces the former primitive-only city/building and car visuals, but it does not make the game photorealistic. Assets are currently loaded from the upstream raw GitHub host at runtime rather than copied into this repository.
 
 ## Current limitations
 
-This is an evolving browser-game prototype, not a photorealistic AAA production. The city and vehicles are generated from geometry rather than scanned or professionally authored assets. Browser performance and WebGL support vary by device. The game requires internet access to load Three.js from the CDN. The next major visual milestone is replacing procedural placeholder geometry with optimized, properly licensed 3D environment and vehicle assets.
+This remains an evolving browser-game prototype. Character models, weapons, detailed destructible environments, advanced vehicle physics, mission progression, and full runtime QA remain future work. Browser performance and WebGL support vary by device. The game requires internet access for Three.js, GLTFLoader, and the external GLB models.
 
 ## Development
 
