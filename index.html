@@ -37,6 +37,7 @@
 <div id="overlay"><div class="panel" id="panel"><div class="kicker">DISTRICT 09 / NIGHT OPERATIONS</div><h1>WELCOME TO<br><span>THE WARZONE.</span></h1><p>A hostile city. Armed patrols. No safe route out. Drive through the streets, evade enemy vehicles and fight back. This is a real-time 3D browser build with a follow camera and touch controls.</p><div class="keys"><span class="key"><b>W / S</b> DRIVE / BRAKE</span><span class="key"><b>A / D</b> STEER</span><span class="key"><b>SPACE</b> FIRE</span><span class="key"><b>SHIFT</b> NITRO</span></div><button class="action" id="start">DEPLOY // ENTER CITY</button><p class="hint">DESKTOP: W/↑ DRIVE · S/↓ REVERSE · A/D STEER · SPACE FIRE · SHIFT NITRO · B BRAKE · ESC PAUSE<br>MOBILE: JOYSTICK + DRIVE / BRAKE / FIRE / NITRO</p></div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
 (()=>{
 'use strict';
 const canvas=document.querySelector('#game'),$=id=>document.getElementById(id);
@@ -61,7 +62,7 @@ for(let j=-16;j<=16;j++){let q=j*20;box(roads,p,.07,q, .16,.025,5,lineMat);box(r
 const city=new THREE.Group();scene.add(city);
 const buildingMats=[mat(0x515957),mat(0x68675f),mat(0x444e50),mat(0x777064),mat(0x3c484a),mat(0x5c6260)];
 function makeBuilding(x,z,w,d,h,seed){
-let g=new THREE.Group();g.position.set(x,0,z);g.userData.bounds={halfWidth:w/2+1,halfDepth:d/2+1};city.add(g);let bm=buildingMats[seed%buildingMats.length];
+let g=new THREE.Group();g.position.set(x,0,z);g.userData.bounds={halfWidth:w/2+1,halfDepth:d/2+1};g.userData.dimensions={w,h,d};city.add(g);let bm=buildingMats[seed%buildingMats.length];
 box(g,0,h/2,0,w,h,d,bm,true);box(g,0,h+.4,0,w+1,.8,d+1,mat(0x303638),true);
 box(g,0,.45,d/2+.12,w,.9,.25,concrete);
 const floors=Math.max(2,Math.floor(h/4.2)),cols=Math.max(2,Math.floor(w/4));
@@ -71,6 +72,29 @@ for(let f=0;f<floors;f++)for(let c=0;c<Math.max(2,Math.floor(d/5));c++){let zz=-
 box(g,-w*.2,h+.9,-d*.2,w*.24,1.2,d*.25,mat(0x252d2e),true);
 if(seed%3===0){let sign=box(g,0,3,d/2+.25,w*.42,1.1,.18,mat(seed%2?0x9b3b2e:0x315c58));}
 }
+const gltfLoader=new GLTFLoader();
+const assetRoot='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
+const buildingAssetPaths=['residencial/predio_alto.glb','residencial/predio_apartamentos.glb','comercial/loja_esquina.glb','industrial/fabrica.glb','residencial/casa_sobrado.glb'];
+const buildingTemplates=[];
+function fitBuildingAsset(source,dims){
+ const model=source.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+ if(!size.x||!size.y||!size.z)return model;
+ const sx=dims.w/size.x,sy=dims.h/size.y,sz=dims.d/size.z;
+ model.scale.set(sx,sy,sz);
+ model.position.set(-(bounds.min.x+bounds.max.x)*.5*sx,-bounds.min.y*sy,-(bounds.min.z+bounds.max.z)*.5*sz);
+ model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+ return model;
+}
+function installBuildingAssets(){
+ if(!buildingTemplates.length)return;
+ city.children.forEach((g,i)=>{
+  const dims=g.userData.dimensions;if(!dims)return;
+  while(g.children.length)g.remove(g.children[0]);
+  const source=buildingTemplates[i%buildingTemplates.length];
+  g.add(fitBuildingAsset(source,dims));
+ });
+}
+buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
 let seed=0;
 for(let gx=-3;gx<3;gx++)for(let gz=-3;gz<3;gz++){let cx=gx*90+45,cz=gz*90+45;let w=rand(24,43),d=rand(24,42),h=rand(13,39);makeBuilding(cx,cz,w,d,h,seed++);if((gx+gz)%2===0)makeBuilding(cx+24,cz-24,13,13,rand(8,15),seed++);}
 function rand(a,b){return a+Math.random()*(b-a)}
@@ -80,7 +104,8 @@ for(let i=-3;i<=3;i++)for(let j=-3;j<=3;j++){for(let s of [-1,1]){let x=i*90+s*1
 for(let i=0;i<45;i++){let x=rand(-280,280),z=rand(-280,280);if(Math.abs(x%90)<16||Math.abs(z%90)<16)continue;let o=box(props,x,.65,z,rand(1,2.5),1.3,rand(1,2),i%2?dark:concrete);o.rotation.y=rand(0,3)}
 // procedural low-poly car with detailed body, glass, wheels and lights
 function buildCar(color=0xd6ff45,police=false){
-let root=new THREE.Group(),bodyMat=mat(color,.4,.35),trim=mat(0x151b1e,.65,.25),wheelMat=rubber;
+let root=new THREE.Group();root.userData.police=police;carRoots.add(root);if(carTemplate)installCarVisual(root,police);
+let bodyMat=mat(color,.4,.35),trim=mat(0x151b1e,.65,.25),wheelMat=rubber;
 box(root,0,.72,0,2.15,.72,4.25,bodyMat,true);box(root,0,1.22,-.18,1.8,.72,2.25,bodyMat,true);
 box(root,0,1.27,.95,1.65,.52,.12,glass);box(root,0,1.27,-1.32,1.65,.52,.12,glass);
 box(root,-.94,1.22,-.18,.1,.58,1.95,glass);box(root,.94,1.22,-.18,.1,.58,1.95,glass);
@@ -91,6 +116,27 @@ box(root,0,.93,-1.65,1.5,.16,.24,trim);
 if(police){box(root,0,1.68,-.2,1.05,.12,.35,mat(0x111719));box(root,-.36,1.8,-.2,.32,.18,.28,mat(0x286dff,.25));box(root,.36,1.8,-.2,.32,.18,.28,mat(0xff2525,.25));}
 root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return root;
 }
+const carRoots=new Set();
+function installCarVisual(root,police){
+ if(!carTemplate)return;
+ while(root.children.length)root.remove(root.children[0]);
+ const model=carTemplate.clone(true),bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
+ if(size.x&&size.y&&size.z){
+  const sx=2.15/size.x,sy=1.75/size.y,sz=4.25/size.z;
+  model.scale.set(sx,sy,sz);
+  model.position.set(-(bounds.min.x+bounds.max.x)*.5*sx,-bounds.min.y*sy,-(bounds.min.z+bounds.max.z)*.5*sz);
+ }
+ model.rotation.y=Math.PI;
+ model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+ root.add(model);
+ if(police){
+  box(root,0,1.68,-.2,1.05,.12,.35,mat(0x111719));
+  box(root,-.36,1.8,-.2,.32,.18,.28,mat(0x286dff,.25));
+  box(root,.36,1.8,-.2,.32,.18,.28,mat(0xff2525,.25));
+ }
+}
+let carTemplate=null;
+gltfLoader.load(assetRoot+'veiculos/carro.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Vehicle asset failed; using fallback geometry',err));
 const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
 const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
