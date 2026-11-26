@@ -107,7 +107,7 @@ function installBuildingAssets(){
 let seed=0;
 for(let gx=-3;gx<3;gx++)for(let gz=-3;gz<3;gz++){let cx=gx*90+45,cz=gz*90+45;let w=rand(24,43),d=rand(24,42),h=rand(13,39);makeBuilding(cx,cz,w,d,h,seed++);if((gx+gz)%2===0)makeBuilding(cx+24,cz-24,13,13,rand(8,15),seed++);}
 // Close-range street frontage: keep recognizable buildings inside the mobile follow-camera view.
-makeBuilding(-19,-34,13,17,27,seed++);makeBuilding(19,-34,13,17,34,seed++);makeBuilding(-22,-68,16,18,39,seed++);makeBuilding(22,-68,16,18,31,seed++);
+makeBuilding(-12,-24,15,18,25,seed++);makeBuilding(12,-24,15,18,29,seed++);makeBuilding(-13,-52,17,19,38,seed++);makeBuilding(13,-52,17,19,32,seed++);makeBuilding(-12,24,15,18,27,seed++);makeBuilding(12,24,15,18,31,seed++);makeBuilding(-13,52,17,19,35,seed++);makeBuilding(13,52,17,19,40,seed++);
 function rand(a,b){return a+Math.random()*(b-a)}
 // lamps, traffic signals, roadside clutter
 const props=new THREE.Group();scene.add(props);
@@ -149,7 +149,7 @@ function installCarVisual(root,police){
 let carTemplate=null,policeCarTemplate=null;
 const vehicleAssetRoot='https://raw.githubusercontent.com/Hidencod/tge-assets/main/packs/car-kit/';
 // Keep procedural player and police vehicles active; no async model replacement during mobile GPU diagnosis.
-const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
+const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);player.rotation.y=Math.PI;
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
 const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
 function spawnEnemy(){let angle=rand(0,Math.PI*2),dist=rand(55,100),x=player.position.x+Math.sin(angle)*dist,z=player.position.z+Math.cos(angle)*dist;let car=buildCar(Math.random()<.5?0x873c36:0x555e61,true);car.position.set(x,0,z);scene.add(car);enemyCars.push({mesh:car,hp:2+Math.floor(wave/3),speed:rand(8,13)+wave*.5,fire:rand(1,2.8),hit:0});}
@@ -202,7 +202,7 @@ stick.addEventListener('pointermove',e=>{if(e.pointerId===stickId)moveStick(e)})
 function moveStick(e){let r=stick.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.34,len=Math.hypot(dx,dy),s=len>max?max/len:1;dx*=s;dy*=s;knob.style.transform='translate('+dx+'px,'+dy+'px)';input.turn=THREE.MathUtils.clamp(dx/max,-1,1);input.forward=THREE.MathUtils.clamp(-dy/max,-1,1)}
 function releaseStick(){stickId=null;input.turn=0;input.forward=0;knob.style.transform='translate(0,0)'}
 ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>stick.addEventListener(ev,releaseStick));
-camera.position.set(0,12,-20);camera.lookAt(0,0,0);updateHUD();$('start').onclick=start;
+camera.position.set(0,12,20);camera.lookAt(0,0,0);updateHUD();document.addEventListener('click',e=>{const button=e.target.closest&&e.target.closest('#start');if(button){e.preventDefault();try{start()}catch(err){console.error('START FAILED',err);toast('START FAILED // '+String(err.message||err).slice(0,70))}}});
 })();
 </script>
 </body></html>
