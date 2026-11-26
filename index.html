@@ -79,6 +79,7 @@ for(let f=0;f<floors;f++)for(let c=0;c<Math.max(2,Math.floor(d/5));c++){let zz=-
 box(g,-w*.2,h+.9,-d*.2,w*.24,1.2,d*.25,mat(0x252d2e),true);
 if(seed%3===0){let sign=box(g,0,3,d/2+.25,w*.42,1.1,.18,mat(seed%2?0x9b3b2e:0x315c58));}
 }
+const useMobileFallback=matchMedia('(max-width: 760px), (pointer: coarse)').matches;
 const gltfLoader=new GLTFLoader();
 const assetRoot='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
 const buildingAssetPaths=['residencial/predio_alto.glb','residencial/predio_apartamentos.glb','comercial/loja_esquina.glb','industrial/fabrica.glb','residencial/casa_sobrado.glb'];
@@ -101,7 +102,7 @@ function installBuildingAssets(){
   g.add(fitBuildingAsset(source,dims));
  });
 }
-buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
+if(!useMobileFallback)buildingAssetPaths.forEach(path=>gltfLoader.load(assetRoot+path,g=>{buildingTemplates.push(g.scene);installBuildingAssets()},undefined,err=>console.warn('Building asset failed:',path,err)));
 let seed=0;
 for(let gx=-3;gx<3;gx++)for(let gz=-3;gz<3;gz++){let cx=gx*90+45,cz=gz*90+45;let w=rand(24,43),d=rand(24,42),h=rand(13,39);makeBuilding(cx,cz,w,d,h,seed++);if((gx+gz)%2===0)makeBuilding(cx+24,cz-24,13,13,rand(8,15),seed++);}
 function rand(a,b){return a+Math.random()*(b-a)}
@@ -143,7 +144,7 @@ function installCarVisual(root,police){
  }
 }
 let carTemplate=null;
-gltfLoader.load(assetRoot+'veiculos/carro.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Vehicle asset failed; using fallback geometry',err));
+if(!useMobileFallback)gltfLoader.load(assetRoot+'veiculos/carro.glb',g=>{carTemplate=g.scene;carRoots.forEach(root=>installCarVisual(root,!!root.userData.police))},undefined,err=>console.warn('Vehicle asset failed; using fallback geometry',err));
 const player=buildCar(0x879b78);scene.add(player);player.position.set(0,0,0);
 const enemyCars=[],shots=[];let score=0,wave=1,hp=100,nitro=100,spawnT=0,fireT=0,active=false,ended=false,toastT=0,shake=0;
 const input={forward:0,turn:0,brake:false,nitro:false,fire:false,drive:false};let keys={};let collisionCooldown=0;
